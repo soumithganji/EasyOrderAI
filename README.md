@@ -41,6 +41,20 @@ The app bridges the gap between AI-powered assistance and real-world shopping by
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/chat.jpg" width="200" alt="Chat Screen"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/review.jpg" width="200" alt="Review Screen"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/scan.jpg" width="200" alt="Scan List Screen"/>
+  &nbsp;&nbsp;
+  <img src="screenshots/cart.jpg" width="200" alt="Cart Screen"/>
+</p>
+
+---
+
 ## Features
 
 ###  Conversational Shopping
@@ -71,29 +85,6 @@ Capture photos of handwritten or printed shopping lists. The **Llama 3.2 Vision*
 
 ###  Secure OAuth 2.0 Authentication
 Industry-standard authentication using **AppAuth** library with PKCE flow for secure API access without exposing credentials.
-
----
-
-## Screenshots
-
-<p align="center">
-  <img src="screenshots/chat.jpg" width="200" alt="Chat Screen"/>
-  &nbsp;&nbsp;
-  <img src="screenshots/review.jpg" width="200" alt="Review Screen"/>
-  &nbsp;&nbsp;
-  <img src="screenshots/scan.jpg" width="200" alt="Scan List Screen"/>
-  &nbsp;&nbsp;
-  <img src="screenshots/cart.jpg" width="200" alt="Cart Screen"/>
-</p>
-
-<p align="center">
-  <em>Login</em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <em>Chat</em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <em>Scan List</em> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <em>Cart</em>
-</p>
-
-> **Note**: Add your screenshots to a `screenshots/` folder in the repository root.
 
 ---
 
