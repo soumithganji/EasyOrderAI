@@ -21,11 +21,12 @@ class EasyOrderViewModelFactory(private val context: Context) : ViewModelProvide
         if (modelClass.isAssignableFrom(com.example.myapplicationeasyaiorder.ui.chat.ChatViewModel::class.java)) {
             val apiKey = com.example.myapplicationeasyaiorder.BuildConfig.NVIDIA_API_KEY
             val authManager = KrogerAuthManager(context)
-            // Inject ProductRepository into ChatViewModel for "smart add" features
-            val productRepo = com.example.myapplicationeasyaiorder.data.ProductRepository(authManager)
+            val aiRepo = com.example.myapplicationeasyaiorder.data.AiRepositoryImpl(apiKey)
+            // Inject ProductRepository with AI capabilities into ChatViewModel
+            val productRepo = com.example.myapplicationeasyaiorder.data.ProductRepository(authManager, aiRepo)
             val cartRepo = com.example.myapplicationeasyaiorder.data.CartRepository(authManager)
             return com.example.myapplicationeasyaiorder.ui.chat.ChatViewModel(
-                com.example.myapplicationeasyaiorder.data.AiRepositoryImpl(apiKey),
+                aiRepo,
                 productRepo,
                 cartRepo
             ) as T

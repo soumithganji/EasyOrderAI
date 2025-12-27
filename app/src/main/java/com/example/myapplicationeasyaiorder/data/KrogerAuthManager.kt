@@ -58,8 +58,12 @@ class KrogerAuthManager(context: Context) {
                  android.util.Log.d("KrogerAuthManager", "Token Response Scope: ${response.scope}")
                  android.util.Log.d("KrogerAuthManager", "Token Response: $response")
                  val accessToken = response.accessToken
+                 val refreshToken = response.refreshToken
                  if (accessToken != null) {
                      saveToken(accessToken)
+                     if (refreshToken != null) {
+                         saveRefreshToken(refreshToken)
+                     }
                      callback(accessToken, null)
                  } else {
                      callback(null, Exception("Access Token is null"))
@@ -78,8 +82,25 @@ class KrogerAuthManager(context: Context) {
         return prefs.getString("access_token", null)
     }
 
+    fun saveRefreshToken(token: String) {
+        prefs.edit().putString("refresh_token", token).apply()
+    }
+
+    fun getRefreshToken(): String? {
+        return prefs.getString("refresh_token", null)
+    }
+
     fun clearToken() {
-        prefs.edit().remove("access_token").apply()
+        prefs.edit()
+            .remove("access_token")
+            .remove("refresh_token")
+            .apply()
+    }
+
+    fun isTokenExpired(): Boolean {
+        // Since we're getting 401s, assume token is expired
+        // A better approach would be to store token expiry time
+        return false
     }
     
     fun dispose() {

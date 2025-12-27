@@ -32,18 +32,25 @@ class AiRepositoryImpl(private val apiKey: String) : AiRepository {
     override suspend fun chatWithAi(prompt: String): String {
         return withContext(Dispatchers.IO) {
             try {
+                android.util.Log.d("AiRepository", "Sending prompt to AI: ${prompt.take(100)}...")
                 val request = NimChatRequest(
-                    model = "meta/llama-3.1-405b-instruct",
+                    model = "meta/llama-3.1-8b-instruct",  // Using smaller, more reliable model
                     messages = listOf(NimMessage("user", prompt))
                 )
                 val response = nimService.chatCompletion("Bearer $apiKey", request)
+                android.util.Log.d("AiRepository", "AI Response code: ${response.code()}")
                 if (response.isSuccessful) {
-                    response.body()?.choices?.firstOrNull()?.message?.content ?: "No response from AI."
+                    val content = response.body()?.choices?.firstOrNull()?.message?.content ?: "No response from AI."
+                    android.util.Log.d("AiRepository", "AI Response: ${content.take(100)}...")
+                    content
                 } else {
-                    "Error: ${response.code()} ${response.message()}"
+                    val error = response.errorBody()?.string() ?: response.message()
+                    android.util.Log.e("AiRepository", "AI Error: ${response.code()} - $error")
+                    "AI_ERROR: ${response.code()}"  // Prefix with AI_ERROR so we can detect it
                 }
             } catch (e: Exception) {
-                "Error processing request: ${e.localizedMessage}"
+                android.util.Log.e("AiRepository", "AI Exception: ${e.message}", e)
+                "AI_ERROR: ${e.localizedMessage}"
             }
         }
     }

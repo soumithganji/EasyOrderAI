@@ -30,7 +30,7 @@ interface KrogerApiService {
         @Header("Authorization") token: String
     ): Response<CartResponse>
 
-    @PUT("cart/items")
+    @PUT("cart/add")
     suspend fun updateCart(
         @Header("Authorization") token: String,
         @Body cartRequest: CartUpdateRequest
