@@ -55,6 +55,8 @@ class KrogerAuthManager(context: Context) {
          
          authService.performTokenRequest(tokenRequest, clientAuth) { response, ex ->
              if (response != null) {
+                 android.util.Log.d("KrogerAuthManager", "Token Response Scope: ${response.scope}")
+                 android.util.Log.d("KrogerAuthManager", "Token Response: $response")
                  val accessToken = response.accessToken
                  if (accessToken != null) {
                      saveToken(accessToken)

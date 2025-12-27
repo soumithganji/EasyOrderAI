@@ -74,6 +74,17 @@ class ChatViewModel(
                    )
                    when (val cartResult = cartRepository.updateCart(cartRequest)) {
                        is com.example.myapplicationeasyaiorder.model.Resource.Success -> {
+                            // Add to local session cart
+                            val imageUrl = product.images.firstOrNull()?.url
+                            com.example.myapplicationeasyaiorder.data.LocalCartRepository.addItem(
+                                com.example.myapplicationeasyaiorder.data.LocalCartRepository.LocalCartItem(
+                                    productId = item.itemId,
+                                    name = product.description,
+                                    price = item.price?.regular ?: 0.0,
+                                    quantity = 1,
+                                    imageUrl = imageUrl
+                                )
+                            )
                             updatedList.add(ChatMessage(text = "Added ${product.description} ($${item.price?.regular}) to cart!", isUser = false))
                        }
                        is com.example.myapplicationeasyaiorder.model.Resource.Error -> {

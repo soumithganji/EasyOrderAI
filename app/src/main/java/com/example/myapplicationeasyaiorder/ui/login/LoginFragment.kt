@@ -60,6 +60,14 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Check if already logged in
+        val authManager = KrogerAuthManager(requireContext())
+        if (!authManager.getToken().isNullOrEmpty()) {
+            // Already have a token, skip login
+            findNavController().navigate(com.example.myapplicationeasyaiorder.R.id.chatFragment)
+            return
+        }
+
         binding.loginButton.setOnClickListener {
             val clientId = com.example.myapplicationeasyaiorder.BuildConfig.KROGER_CLIENT_ID
             
