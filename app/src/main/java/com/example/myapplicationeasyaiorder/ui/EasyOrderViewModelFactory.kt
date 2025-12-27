@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.myapplicationeasyaiorder.data.KrogerAuthManager
 import com.example.myapplicationeasyaiorder.ui.login.LoginViewModel
 import com.example.myapplicationeasyaiorder.ui.cart.CartViewModel
+import com.example.myapplicationeasyaiorder.ui.camera.ScanViewModel
 
 class EasyOrderViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
@@ -31,6 +32,15 @@ class EasyOrderViewModelFactory(private val context: Context) : ViewModelProvide
                 cartRepo
             ) as T
         }
+        if (modelClass.isAssignableFrom(ScanViewModel::class.java)) {
+            val apiKey = com.example.myapplicationeasyaiorder.BuildConfig.NVIDIA_API_KEY
+            val authManager = KrogerAuthManager(context)
+            val aiRepo = com.example.myapplicationeasyaiorder.data.AiRepositoryImpl(apiKey)
+            val productRepo = com.example.myapplicationeasyaiorder.data.ProductRepository(authManager, aiRepo)
+            val cartRepo = com.example.myapplicationeasyaiorder.data.CartRepository(authManager)
+            return ScanViewModel(aiRepo, productRepo, cartRepo) as T
+        }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+
