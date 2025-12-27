@@ -23,12 +23,12 @@ class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.ChatViewHolder>(ChatDif
         fun bind(message: ChatMessage) {
             if (message.isUser) {
                 binding.userMessage.text = message.text
-                binding.userMessage.visibility = View.VISIBLE
-                binding.botMessage.visibility = View.GONE
+                binding.userMessageCard.visibility = View.VISIBLE
+                binding.botMessageCard.visibility = View.GONE
             } else {
                 binding.botMessage.text = message.text
-                binding.botMessage.visibility = View.VISIBLE
-                binding.userMessage.visibility = View.GONE
+                binding.botMessageCard.visibility = View.VISIBLE
+                binding.userMessageCard.visibility = View.GONE
             }
         }
     }

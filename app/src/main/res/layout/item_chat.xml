@@ -4,32 +4,73 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="4dp">
 
-    <TextView
-        android:id="@+id/userMessage"
+    <!-- User Message (Green, aligned right) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/userMessageCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#2196F3"
-        android:padding="12dp"
-        android:text="User Message"
-        android:textColor="#FFFFFF"
         android:visibility="visible"
+        app:cardBackgroundColor="@color/green_primary"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="1dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.75" />
+        app:layout_constraintWidth_percent="0.8">
 
-    <TextView
-        android:id="@+id/botMessage"
+        <TextView
+            android:id="@+id/userMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="14dp"
+            android:text="User Message"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:lineSpacingMultiplier="1.2" />
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Bot Message (Light Grey, aligned left) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/botMessageCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="#E0E0E0"
-        android:padding="12dp"
-        android:text="Bot Message"
-        android:textColor="#000000"
         android:visibility="gone"
+        app:cardBackgroundColor="@color/surface_container"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="1dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.75" />
+        app:layout_constraintWidth_percent="0.8">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🤖 AI"
+                android:textColor="@color/green_primary"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/botMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Bot Message"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:lineSpacingMultiplier="1.2" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

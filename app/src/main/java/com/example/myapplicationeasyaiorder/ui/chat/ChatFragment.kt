@@ -45,10 +45,10 @@ class ChatFragment : Fragment() {
         }
 
         binding.sendButton.setOnClickListener {
-            val text = binding.messageInput.text.toString()
+            val text = binding.messageInput.text?.toString() ?: ""
             if (text.isNotBlank()) {
                 viewModel.sendMessage(text)
-                binding.messageInput.text.clear()
+                binding.messageInput.setText("")
             }
         }
 
