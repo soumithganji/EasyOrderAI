@@ -70,23 +70,32 @@ class AiRepositoryImpl(private val apiKey: String) : AiRepository {
     override suspend fun analyzeListImage(base64Image: String): List<ParsedItem> {
         return withContext(Dispatchers.IO) {
             try {
-                android.util.Log.d("AiRepository", "Analyzing image for grocery list...")
+                android.util.Log.d("AiRepository", "Analyzing image for grocery list... Image size: ${base64Image.length} chars")
                 
-                val prompt = """Look at this image of a grocery/shopping list. 
-Extract ALL items from the list, whether handwritten or typed.
-For each item, identify the quantity if mentioned (e.g., "milk x2" means quantity 2, "3 eggs" means quantity 3).
-If no quantity is specified, assume quantity is 1.
+                val prompt = """You are an OCR system. Read the handwritten or printed text in this image.
 
-Return ONLY a simple list in this exact format, one item per line:
+INSTRUCTIONS:
+1. Look at the image carefully
+2. Each LINE in the list is a SEPARATE item - do not combine lines
+3. Read ONLY the text that is actually written/visible in the image
+4. Do NOT add any words that are not in the image
+5. Do NOT guess or infer - only report what you can actually see
+6. If you cannot read a word clearly, skip it
+
+IMPORTANT: If the list has items on separate lines, output them as separate items.
+For example, if "pepper" is on one line and "hot sauce" is on another line, output:
+pepper|1
+hot sauce|1
+NOT: pepper hot sauce|1
+
+For each item, check if there's a number next to it:
+- If a number is written (like "2" or "x3"), use that as quantity
+- If no number is written, quantity is 1
+
+OUTPUT FORMAT - one item per line:
 item_name|quantity
 
-Examples of valid output:
-milk|2
-eggs|1
-bread|1
-butter|3
-
-Do not include any other text, explanations, or formatting. Just the items and quantities separated by pipe character."""
+CRITICAL: Only output items you can clearly see. Do not combine separate lines into one item."""
 
                 // Build vision request with image
                 val imageDataUrl = if (base64Image.startsWith("data:")) {
@@ -95,8 +104,10 @@ Do not include any other text, explanations, or formatting. Just the items and q
                     "data:image/jpeg;base64,$base64Image"
                 }
                 
+                android.util.Log.d("AiRepository", "Using vision model: meta/llama-3.2-11b-vision-instruct")
+                
                 val request = NimVisionRequest(
-                    model = "nvidia/llama-3.2-nv-vision-instruct-dpo",
+                    model = "meta/llama-3.2-11b-vision-instruct",
                     messages = listOf(
                         NimVisionMessage(
                             role = "user",
@@ -109,8 +120,8 @@ Do not include any other text, explanations, or formatting. Just the items and q
                             )
                         )
                     ),
-                    max_tokens = 512,
-                    temperature = 0.1
+                    max_tokens = 1024,
+                    temperature = 0.2
                 )
                 
                 val response = nimService.visionCompletion("Bearer $apiKey", request)
@@ -118,13 +129,22 @@ Do not include any other text, explanations, or formatting. Just the items and q
                 
                 if (response.isSuccessful) {
                     val content = response.body()?.choices?.firstOrNull()?.message?.content ?: ""
-                    android.util.Log.d("AiRepository", "Vision Response: $content")
+                    android.util.Log.d("AiRepository", "Vision Response content: $content")
+                    
+                    if (content.isBlank()) {
+                        android.util.Log.w("AiRepository", "Vision returned empty content")
+                        return@withContext emptyList()
+                    }
                     
                     // Parse the response
-                    parseItemsFromResponse(content)
+                    val items = parseItemsFromResponse(content)
+                    android.util.Log.d("AiRepository", "Parsed ${items.size} items from vision response")
+                    items
                 } else {
-                    val error = response.errorBody()?.string() ?: response.message()
-                    android.util.Log.e("AiRepository", "Vision Error: ${response.code()} - $error")
+                    val errorBody = response.errorBody()?.string() ?: ""
+                    android.util.Log.e("AiRepository", "Vision Error: ${response.code()} - ${response.message()} - $errorBody")
+                    
+                    // If vision API fails, return empty - user will see "no items found"
                     emptyList()
                 }
             } catch (e: Exception) {
@@ -136,58 +156,78 @@ Do not include any other text, explanations, or formatting. Just the items and q
     
     private fun parseItemsFromResponse(response: String): List<ParsedItem> {
         val items = mutableListOf<ParsedItem>()
+        android.util.Log.d("AiRepository", "Parsing response: $response")
         
         response.lines().forEach { line ->
             val trimmed = line.trim()
-            if (trimmed.isNotEmpty() && trimmed.contains("|")) {
+                .replace("*", "")  // Remove markdown asterisks
+                .replace("-", "")   // Remove list dashes
+                .trim()
+            
+            if (trimmed.isEmpty()) return@forEach
+            
+            // Skip common non-item lines
+            if (trimmed.startsWith("#") || 
+                trimmed.contains("```") || 
+                trimmed.lowercase().contains("here") ||
+                trimmed.lowercase().contains("list") ||
+                trimmed.lowercase().contains("item") && trimmed.contains(":")) {
+                return@forEach
+            }
+            
+            // Try pipe-separated format first (our requested format)
+            if (trimmed.contains("|")) {
                 val parts = trimmed.split("|")
                 if (parts.size >= 2) {
                     val name = parts[0].trim()
-                    val quantity = parts[1].trim().toIntOrNull() ?: 1
-                    if (name.isNotEmpty()) {
+                    val quantity = parts[1].trim().filter { it.isDigit() }.toIntOrNull() ?: 1
+                    if (name.isNotEmpty() && name.length > 1) {
                         items.add(ParsedItem(name = name, quantity = quantity))
+                        android.util.Log.d("AiRepository", "Parsed (pipe): $name x $quantity")
+                        return@forEach
                     }
                 }
-            } else if (trimmed.isNotEmpty() && !trimmed.startsWith("#") && !trimmed.contains("```")) {
-                // Fallback: try to parse lines without pipe
-                val quantityPatterns = listOf(
-                    "(\\d+)\\s*[xX×]?\\s*(.+)".toRegex(),  // "2 milk" or "2x milk"
-                    "(.+)\\s*[xX×]\\s*(\\d+)".toRegex()    // "milk x2"
-                )
-                
-                var matched = false
-                for (pattern in quantityPatterns) {
-                    val match = pattern.find(trimmed)
-                    if (match != null) {
-                        val groups = match.groupValues
-                        if (pattern.pattern.startsWith("(\\d+)")) {
-                            val qty = groups[1].toIntOrNull() ?: 1
-                            val name = groups[2].trim()
-                            if (name.isNotEmpty()) {
-                                items.add(ParsedItem(name = name, quantity = qty))
-                                matched = true
-                                break
-                            }
-                        } else {
-                            val name = groups[1].trim()
-                            val qty = groups[2].toIntOrNull() ?: 1
-                            if (name.isNotEmpty()) {
-                                items.add(ParsedItem(name = name, quantity = qty))
-                                matched = true
-                                break
-                            }
-                        }
+            }
+            
+            // Try "quantity x item" or "item x quantity" patterns
+            val qtyPatterns = listOf(
+                "^(\\d+)\\s*[xX×]\\s*(.+)$".toRegex(),      // "2x milk" or "2 x milk"
+                "^(\\d+)\\s+(.+)$".toRegex(),               // "2 milk"
+                "^(.+?)\\s*[xX×]\\s*(\\d+)$".toRegex(),     // "milk x2" or "milk x 2"
+                "^(.+?)\\s*\\((\\d+)\\)$".toRegex()          // "milk (2)"
+            )
+            
+            for (pattern in qtyPatterns) {
+                val match = pattern.find(trimmed)
+                if (match != null) {
+                    val groups = match.groupValues
+                    val (name, qty) = if (groups[1].toIntOrNull() != null) {
+                        Pair(groups[2].trim(), groups[1].toIntOrNull() ?: 1)
+                    } else {
+                        Pair(groups[1].trim(), groups[2].toIntOrNull() ?: 1)
+                    }
+                    if (name.isNotEmpty() && name.length > 1) {
+                        items.add(ParsedItem(name = name, quantity = qty))
+                        android.util.Log.d("AiRepository", "Parsed (pattern): $name x $qty")
+                        return@forEach
                     }
                 }
-                
-                if (!matched && trimmed.length > 1) {
-                    // Just add as single item
-                    items.add(ParsedItem(name = trimmed, quantity = 1))
-                }
+            }
+            
+            // If no pattern matched and line looks like a simple item name
+            if (trimmed.length >= 2 && 
+                !trimmed.contains("=") && 
+                !trimmed.all { it.isDigit() }) {
+                items.add(ParsedItem(name = trimmed, quantity = 1))
+                android.util.Log.d("AiRepository", "Parsed (simple): $trimmed x 1")
             }
         }
         
-        return items.distinctBy { it.name.lowercase() }
+        // Remove duplicates (keep first occurrence)
+        val uniqueItems = items.distinctBy { it.name.lowercase().trim() }
+        android.util.Log.d("AiRepository", "Final items count: ${uniqueItems.size}")
+        return uniqueItems
     }
 }
+
 

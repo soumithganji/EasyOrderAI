@@ -201,8 +201,8 @@ class CameraFragment : Fragment() {
             val bitmap = BitmapFactory.decodeStream(inputStream)
             inputStream?.close()
 
-            // Resize if too large
-            val maxSize = 1024
+            // Resize if too large - use higher resolution for better OCR
+            val maxSize = 1536  // Increased from 1024 for better text recognition
             val scaledBitmap = if (bitmap.width > maxSize || bitmap.height > maxSize) {
                 val ratio = minOf(maxSize.toFloat() / bitmap.width, maxSize.toFloat() / bitmap.height)
                 Bitmap.createScaledBitmap(
@@ -216,7 +216,7 @@ class CameraFragment : Fragment() {
             }
 
             val outputStream = ByteArrayOutputStream()
-            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 92, outputStream)  // Higher quality
             val bytes = outputStream.toByteArray()
             Base64.encodeToString(bytes, Base64.NO_WRAP)
         } catch (e: Exception) {
