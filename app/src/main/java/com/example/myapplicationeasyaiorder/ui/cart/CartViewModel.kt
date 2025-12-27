@@ -35,39 +35,39 @@ class CartViewModel(private val repository: CartRepository) : ViewModel() {
         }
     }
 
-    fun updateQuantity(item: CartItem, newQuantity: Int) {
-        viewModelScope.launch {
-            val request = com.example.myapplicationeasyaiorder.model.CartUpdateRequest(
-                items = listOf(
-                    com.example.myapplicationeasyaiorder.model.CartItemRequest(
-                        upc = item.itemId,
-                        quantity = newQuantity
-                    )
-                )
-            )
-            // Optimistic update or wait? Wait for now.
-            when (val result = repository.updateCart(request)) {
-                is Resource.Success -> {
-                    loadCart() // Refresh cart after update
-                }
-                is Resource.Error -> {
-                    // Show error? For now just log or do nothing.
-                }
-                else -> {}
-            }
-        }
-    }
-    fun removeItem(itemId: String) {
+    fun updateQuantity(itemId: String, newQuantity: Int) {
         viewModelScope.launch {
             val request = com.example.myapplicationeasyaiorder.model.CartUpdateRequest(
                 items = listOf(
                     com.example.myapplicationeasyaiorder.model.CartItemRequest(
                         upc = itemId,
-                        quantity = 0 // 0 means remove in Kroger API
+                        quantity = newQuantity
                     )
                 )
             )
             when (val result = repository.updateCart(request)) {
+                is Resource.Success -> {
+                    loadCart()
+                }
+                else -> {
+                    // Log error
+                }
+            }
+        }
+    }
+    fun updateQuantity(item: CartItem, newQuantity: Int) {
+        updateQuantity(item.itemId, newQuantity)
+    }
+
+    fun removeItem(itemId: String) {
+        val currentCart = (_cartState.value as? Resource.Success)?.data
+        if (currentCart == null) {
+            android.util.Log.e("CartViewModel", "Cannot remove item, cart not loaded")
+            return
+        }
+
+        viewModelScope.launch {
+            when (val result = repository.removeCartItem(currentCart.cartId, itemId)) {
                 is Resource.Success -> {
                     loadCart()
                 }

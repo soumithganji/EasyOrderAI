@@ -88,6 +88,24 @@ class ChatViewModel(
         }
     }
 
+    private val TYPING_ID = "typing_indicator_msg"
+
+    private fun showTyping() {
+        val currentList = _messages.value.orEmpty().toMutableList()
+        // Remove existing if any to avoid duplicates
+        currentList.removeAll { it.id == TYPING_ID }
+        currentList.add(ChatMessage(id = TYPING_ID, text = "Typing...", isUser = false))
+        _messages.value = currentList
+    }
+
+    private fun hideTyping() {
+        val currentList = _messages.value.orEmpty().toMutableList()
+        val removed = currentList.removeAll { it.id == TYPING_ID }
+        if (removed) {
+            _messages.value = currentList
+        }
+    }
+
     fun sendMessage(text: String) {
         if (text.isBlank()) return
         
@@ -96,6 +114,7 @@ class ChatViewModel(
         _messages.value = currentList
         
         _isLoading.value = true
+        showTyping()
         
         viewModelScope.launch {
             // Check for recipe/ingredient requests
@@ -123,7 +142,8 @@ class ChatViewModel(
             
             when {
                 recipeName != null && !recipeName.contains("add", ignoreCase = true) -> {
-                    handleRecipeAdd(recipeName, currentList)
+                    hideTyping()
+                    handleRecipeAdd(recipeName, _messages.value.orEmpty().toMutableList())
                 }
                 matchResult != null -> {
                     val itemName = matchResult.groupValues[1]
@@ -131,9 +151,11 @@ class ChatViewModel(
                         itemName.contains("for", ignoreCase = true) ||
                         itemName.contains("to make", ignoreCase = true)) {
                         val cleanRecipe = itemName.replace("(?i)ingredients?\\s*(for|to make)?\\s*".toRegex(), "").trim()
-                        handleRecipeAdd(cleanRecipe, currentList)
+                        hideTyping()
+                        handleRecipeAdd(cleanRecipe, _messages.value.orEmpty().toMutableList())
                     } else {
-                        handleSmartAdd(itemName, currentList)
+                        hideTyping()
+                        handleSmartAdd(itemName, _messages.value.orEmpty().toMutableList())
                     }
                 }
                 else -> {
@@ -147,7 +169,10 @@ Is this:
 Reply with ONLY one word: ITEM, RECIPE, or OTHER"""
 
                     val classification = aiRepository.chatWithAi(classifyPrompt).trim().uppercase()
+                    hideTyping()
                     
+                    val listAfterTyping = _messages.value.orEmpty().toMutableList()
+
                     when {
                         classification.contains("ITEM") -> {
                             // Treat as single item or parse multiple items
@@ -156,27 +181,27 @@ Reply with ONLY one word: ITEM, RECIPE, or OTHER"""
                                 .filter { it.isNotEmpty() }
                             
                             if (items.size == 1) {
-                                handleSmartAdd(items.first(), currentList)
+                                handleSmartAdd(items.first(), listAfterTyping)
                             } else {
                                 // Multiple items - add each
                                 for (item in items) {
-                                    handleSmartAdd(item, currentList)
+                                    handleSmartAdd(item, listAfterTyping)
                                 }
                             }
                         }
                         classification.contains("RECIPE") -> {
-                            handleRecipeAdd(text, currentList)
+                            handleRecipeAdd(text, listAfterTyping)
                         }
                         else -> {
                             val response = aiRepository.chatWithAi(text)
-                            val updatedList = _messages.value.orEmpty().toMutableList()
-                            updatedList.add(ChatMessage(text = response, isUser = false))
-                            _messages.value = updatedList
+                            listAfterTyping.add(ChatMessage(text = response, isUser = false))
+                            _messages.value = listAfterTyping
                         }
                     }
                 }
             }
             _isLoading.value = false
+            hideTyping() // Ensure removed at end
         }
     }
 

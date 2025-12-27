@@ -61,7 +61,7 @@ class ChatFragment : Fragment() {
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            binding.loadingBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            // Loading indicator removed from UI as per request
         }
 
         // Observe pending items to show confirmation dialog

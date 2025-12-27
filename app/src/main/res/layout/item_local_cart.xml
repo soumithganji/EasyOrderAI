@@ -19,19 +19,8 @@
             android:text="Item Name"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/btnDelete"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageButton
-            android:id="@+id/btnDelete"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:src="@drawable/ic_delete"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="fitCenter"
-            android:contentDescription="Remove item"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -45,48 +34,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/itemName" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/itemQuantity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/itemPrice">
-
-            <Button
-                android:id="@+id/btnMinus"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:text="-"
-                android:padding="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                style="?attr/materialButtonOutlinedStyle"/>
-
-            <TextView
-                android:id="@+id/itemQuantity"
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:text="1"
-                android:textAlignment="center"
-                android:textColor="@color/text_primary"/>
-
-            <Button
-                android:id="@+id/btnPlus"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:text="+"
-                android:padding="0dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                style="?attr/materialButtonOutlinedStyle"/>
-
-        </LinearLayout>
+            android:text="Qty: 1"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:layout_marginTop="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/itemName"
+            app:layout_constraintBottom_toBottomOf="@+id/itemPrice"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

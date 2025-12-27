@@ -35,4 +35,11 @@ interface KrogerApiService {
         @Header("Authorization") token: String,
         @Body cartRequest: CartUpdateRequest
     ): Response<Unit>
+
+    @DELETE("carts/{cartId}/items/{upc}")
+    suspend fun deleteItem(
+        @Header("Authorization") token: String,
+        @Path("cartId") cartId: String,
+        @Path("upc") upc: String
+    ): Response<Unit>
 }

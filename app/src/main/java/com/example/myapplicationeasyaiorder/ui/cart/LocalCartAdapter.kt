@@ -8,10 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplicationeasyaiorder.data.LocalCartRepository.LocalCartItem
 import com.example.myapplicationeasyaiorder.databinding.ItemLocalCartBinding
 
-class LocalCartAdapter(
-    private val onQuantityChange: (LocalCartItem, Int) -> Unit,
-    private val onRemove: (LocalCartItem) -> Unit
-) : ListAdapter<LocalCartItem, LocalCartAdapter.ViewHolder>(DiffCallback()) {
+class LocalCartAdapter : ListAdapter<LocalCartItem, LocalCartAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemLocalCartBinding.inflate(
@@ -30,21 +27,7 @@ class LocalCartAdapter(
         fun bind(item: LocalCartItem) {
             binding.itemName.text = item.name
             binding.itemPrice.text = "$${String.format("%.2f", item.price)}"
-            binding.itemQuantity.text = item.quantity.toString()
-
-            binding.btnPlus.setOnClickListener {
-                onQuantityChange(item, item.quantity + 1)
-            }
-
-            binding.btnMinus.setOnClickListener {
-                if (item.quantity > 1) {
-                    onQuantityChange(item, item.quantity - 1)
-                }
-            }
-
-            binding.btnDelete.setOnClickListener {
-                onRemove(item)
-            }
+            binding.itemQuantity.text = "Qty: ${item.quantity}"
         }
     }
 

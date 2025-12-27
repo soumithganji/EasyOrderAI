@@ -7,16 +7,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplicationeasyaiorder.data.LocalCartRepository
 import com.example.myapplicationeasyaiorder.databinding.FragmentCartBinding
+import com.example.myapplicationeasyaiorder.ui.cart.LocalCartAdapter
+import com.example.myapplicationeasyaiorder.ui.cart.CartViewModel
 
 class CartFragment : Fragment() {
 
     private var _binding: FragmentCartBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: CartViewModel by androidx.fragment.app.viewModels {
+    private lateinit var cartAdapter: LocalCartAdapter
+
+    private val viewModel: CartViewModel by viewModels {
         com.example.myapplicationeasyaiorder.ui.EasyOrderViewModelFactory(requireContext())
     }
 
@@ -31,18 +36,7 @@ class CartFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        cartAdapter = LocalCartAdapter(
-            onQuantityChange = { item, newQty ->
-                LocalCartRepository.updateQuantity(item.productId, newQty)
-                // TODO: Sync quantity updates too? For now just local.
-            },
-            onRemove = { item ->
-                // Remove from local cart
-                LocalCartRepository.removeItem(item.productId)
-                // Also sync removal to Kroger API
-                viewModel.removeItem(item.productId)
-            }
-        )
+        cartAdapter = LocalCartAdapter()
 
         binding.cartRecyclerView.apply {
             layoutManager = LinearLayoutManager(context)

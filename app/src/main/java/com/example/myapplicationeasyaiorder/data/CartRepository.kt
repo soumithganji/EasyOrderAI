@@ -50,4 +50,20 @@ class CartRepository(private val authManager: KrogerAuthManager) {
             Resource.Error(e.message ?: "Network Error")
         }
     }
+
+    suspend fun removeCartItem(cartId: String, upc: String): Resource<Unit> {
+        val token = authManager.getToken()
+        if (token.isNullOrEmpty()) return Resource.Error("User not logged in")
+
+        return try {
+            val response = RetrofitClient.krogerApi.deleteItem("Bearer $token", cartId, upc)
+            if (response.isSuccessful) {
+                Resource.Success(Unit)
+            } else {
+                Resource.Error("Error removing item: ${response.code()} ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Network Error")
+        }
+    }
 }
