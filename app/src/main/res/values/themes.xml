@@ -54,7 +54,7 @@
     <!-- Splash Screen Theme -->
     <style name="Theme.EasyOrderAI.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/green_primary</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/app_logo</item>
         <item name="postSplashScreenTheme">@style/Theme.EasyOrderAI</item>
     </style>
 </resources>

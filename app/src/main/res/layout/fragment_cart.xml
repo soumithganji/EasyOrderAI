@@ -68,9 +68,7 @@
         <ImageView
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:src="@android:drawable/ic_menu_info_details"
-            android:tint="@color/green_primary_light"
-            android:alpha="0.7" />
+            android:src="@drawable/ic_info" />
 
         <TextView
             android:layout_width="wrap_content"
